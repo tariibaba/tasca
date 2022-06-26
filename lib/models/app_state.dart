@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tasca/models/index.dart';
-import 'package:tasca/storage/app_state_storage.dart';
 
 part 'app_state.g.dart';
 
@@ -59,14 +58,10 @@ class AppState extends ChangeNotifier {
   }
 
   void startTaskReminderDueCheck() {
-    const devInterval = 10;
-    const interval = kDebugMode ? devInterval : 60;
-    final timer = Timer.periodic(Duration(seconds: devInterval), (timer) {
-      print('Checking for reminder notification');
+    Timer.periodic(const Duration(seconds: 60), (timer) {
       taskList.where((task) => !task.isComplete).forEach((task) {
-        print('isReminderDue: ${task.isReminderDue()}');
         if (task.isReminderDue()) {
-          print('Reminder due');
+          task.hasReminded();
           taskReminderDueController.add(task);
         }
       });

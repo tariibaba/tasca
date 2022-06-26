@@ -86,6 +86,26 @@ class Task {
     return earliest;
   }
 
+  TaskReminder? getNextReminder() {
+    DateTime? earliestTime;
+    TaskReminder? earliest;
+    for (final reminder in reminders) {
+      final remindTime = getReminderTime(reminder);
+      if (remindTime != null) {
+        if (earliestTime == null ||
+            (remindTime.isBefore(earliestTime) && !remindTime.isPast)) {
+          earliestTime = remindTime;
+          earliest = reminder;
+        }
+      }
+    }
+    return earliest;
+  }
+
+  void hasReminded() {
+    lastRemindTime = clock.now();
+  }
+
   bool get isPlanned {
     return schedules.isNotEmpty;
   }
@@ -95,7 +115,8 @@ class Task {
     if (nextRemindTime == null) {
       return false;
     } else {
-      return !clock.now().isBefore(nextRemindTime);
+      return (!clock.now().isBefore(nextRemindTime)) &&
+          (lastRemindTime?.isBefore(clock.now()) ?? true);
     }
   }
 
