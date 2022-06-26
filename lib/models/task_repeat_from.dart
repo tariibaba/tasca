@@ -1,0 +1,1 @@
+enum TaskRepeatFrom { dueTime, completionTime }

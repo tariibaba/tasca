@@ -1,0 +1,1 @@
+enum TimeRepeatInterval { minute, hour }
