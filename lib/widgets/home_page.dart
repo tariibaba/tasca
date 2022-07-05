@@ -39,7 +39,11 @@ class _MyHomePageState extends State<MyHomePage> {
             Consumer<AppState>(
               builder: (context, state, child) {
                 if (width >= 600 && state.isTaskInfoViewOpen) {
-                  return SizedBox(width: 300, child: TaskInfoView());
+                  return SizedBox(
+                      width: 300,
+                      child: TaskInfoView(
+                        key: ValueKey(state.activeTaskId),
+                      ));
                 } else {
                   return Container();
                 }

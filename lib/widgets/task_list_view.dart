@@ -21,7 +21,7 @@ class ReminderListView extends StatelessWidget {
                     onChanged: (value) {
                       state.setTaskCompletion(task.id!, value!);
                     }),
-                Text(task.description!),
+                Text(task.title!),
                 Text(task.getDueTime()?.toString() ?? ''),
                 IconButton(
                     onPressed: () {

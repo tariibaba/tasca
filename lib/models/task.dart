@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:tasca/app_values.dart';
 import 'package:tasca/models/index.dart';
 import 'package:dart_date/dart_date.dart';
 import 'package:tasca/models/task_reminder_time_before_due.dart';
@@ -11,11 +12,12 @@ part 'task.g.dart';
 @JsonSerializable()
 class Task {
   String? id;
-  String? description;
+  String? title;
   List<DateTimeSchedule> schedules = [];
   List<TaskReminder> reminders = [];
   bool isComplete = false;
   DateTime? lastRemindTime;
+  DateTime? snoozeTime;
 
   Task();
 
@@ -111,13 +113,20 @@ class Task {
   }
 
   bool isReminderDue() {
-    final nextRemindTime = getNextRemindTime();
+    final nextRemindTime = snoozeTime ?? getNextRemindTime();
     if (nextRemindTime == null) {
       return false;
     } else {
-      return (!clock.now().isBefore(nextRemindTime)) &&
-          (lastRemindTime?.isBefore(clock.now()) ?? true);
+      final hasAlreadyReminded =
+          lastRemindTime?.isSameOrAfter(nextRemindTime) ?? false;
+      final isNextRemindTimeNowOrPast =
+          clock.now().isSameOrAfter(nextRemindTime);
+      return isNextRemindTimeNowOrPast && !hasAlreadyReminded;
     }
+  }
+
+  void snooze() {
+    snoozeTime = clock.now().addMinutes(snoozeDuration);
   }
 
   factory Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);

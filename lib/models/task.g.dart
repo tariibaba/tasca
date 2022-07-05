@@ -8,7 +8,7 @@ part of 'task.dart';
 
 Task _$TaskFromJson(Map<String, dynamic> json) => Task()
   ..id = json['id'] as String?
-  ..description = json['description'] as String?
+  ..title = json['title'] as String?
   ..schedules = (json['schedules'] as List<dynamic>)
       .map((e) => DateTimeSchedule.fromJson(e as Map<String, dynamic>))
       .toList()
@@ -18,13 +18,17 @@ Task _$TaskFromJson(Map<String, dynamic> json) => Task()
   ..isComplete = json['isComplete'] as bool
   ..lastRemindTime = json['lastRemindTime'] == null
       ? null
-      : DateTime.parse(json['lastRemindTime'] as String);
+      : DateTime.parse(json['lastRemindTime'] as String)
+  ..snoozeTime = json['snoozeTime'] == null
+      ? null
+      : DateTime.parse(json['snoozeTime'] as String);
 
 Map<String, dynamic> _$TaskToJson(Task instance) => <String, dynamic>{
       'id': instance.id,
-      'description': instance.description,
+      'title': instance.title,
       'schedules': instance.schedules,
       'reminders': instance.reminders,
       'isComplete': instance.isComplete,
       'lastRemindTime': instance.lastRemindTime?.toIso8601String(),
+      'snoozeTime': instance.snoozeTime?.toIso8601String(),
     };

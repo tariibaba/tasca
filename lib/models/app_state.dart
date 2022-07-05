@@ -53,12 +53,10 @@ class AppState extends ChangeNotifier {
     return allTasks[activeTaskId];
   }
 
-  void update() {
-    notifyListeners();
-  }
-
   void startTaskReminderDueCheck() {
-    Timer.periodic(const Duration(seconds: 60), (timer) {
+    const devInterval = 10;
+    const interval = kDebugMode ? devInterval : 60;
+    Timer.periodic(const Duration(seconds: interval), (timer) {
       taskList.where((task) => !task.isComplete).forEach((task) {
         if (task.isReminderDue()) {
           task.hasReminded();
@@ -66,6 +64,18 @@ class AppState extends ChangeNotifier {
         }
       });
     });
+  }
+
+  void snoozeTaskReminder(String taskId) {
+    final task = allTasks[taskId];
+    task!.snooze();
+    notifyListeners();
+  }
+
+  void completeTask(String taskId) {
+    final task = allTasks[taskId]!;
+    task.isComplete = true;
+    notifyListeners();
   }
 
   @JsonKey(ignore: true)

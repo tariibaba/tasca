@@ -25,7 +25,7 @@ class _NewTaskTextFieldState extends State<NewTaskTextField> {
 
   _createTask() {
     _newTask = Task()
-      ..description = _descController.text
+      ..title = _descController.text
       ..id = Uuid().v4();
     _appState.createTask(_newTask!);
     _localStorage

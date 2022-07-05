@@ -22,8 +22,8 @@ class TaskInfoView extends StatefulWidget {
 class _TaskInfoViewState extends State<TaskInfoView> {
   final _formKey = GlobalKey<FormState>();
 
-  late Task _task;
-  final TextEditingController _descController = TextEditingController();
+  late Task _editedTask;
+  final TextEditingController _titleController = TextEditingController();
 
   bool _showTaskSetterView = false;
   int? _activeTaskScheduleIndex;
@@ -40,62 +40,73 @@ class _TaskInfoViewState extends State<TaskInfoView> {
   void initState() {
     super.initState();
     _appState = Provider.of<AppState>(context, listen: false);
-    _task = _appState.allTasks[_appState.activeTaskId]!;
+    _editedTask = _appState.activeTask!;
     _descFocusNode = FocusNode();
     _appStateStorage = getIt<AppStateStorage>();
   }
 
   _updateTask() {
-    _appState.updateActiveTask(_task);
+    _appState.updateActiveTask(_editedTask);
     _appStateStorage.save(_appState);
+  }
+
+  @override
+  void didUpdateWidget(covariant TaskInfoView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    print('did update');
+    _editedTask = _appState.activeTask!;
   }
 
   @override
   Widget build(BuildContext context) {
     final addingNewSchedule =
         _activeTaskScheduleIndex == null && _showTaskSetterView;
-    _descController.text = _task.description ?? '';
+    _titleController.text = _editedTask.title ?? '';
 
     final addNewReminder =
         _activeReminderIndex == null && _showReminderSetterView;
 
-    return SizedBox(
-        width: 200,
-        child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                Focus(
-                  child: TextFormField(
-                    controller: _descController,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(), labelText: 'Description'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Set a description';
-                      }
-                      return null;
-                    },
-                  ),
-                  onFocusChange: (hasFocus) {
-                    if (!hasFocus) {
-                      _task.description = _descController.text;
-                      _updateTask();
-                    }
-                  },
-                ),
-                TaskScheduleListView(),
-                TaskReminderListView(),
-                ButtonBar(
+    return Consumer(
+      builder: (context, value, child) {
+        return SizedBox(
+            width: 200,
+            child: Form(
+                key: _formKey,
+                child: Column(
                   children: [
-                    TextButton(
-                        onPressed: () {
-                          _appState.closeTaskInfoView();
+                    Focus(
+                      child: TextFormField(
+                        controller: _titleController,
+                        decoration: const InputDecoration(
+                            border: OutlineInputBorder(), labelText: 'Title'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Set a title';
+                          }
+                          return null;
                         },
-                        child: const Text('Close')),
+                      ),
+                      onFocusChange: (hasFocus) {
+                        if (!hasFocus) {
+                          _editedTask.title = _titleController.text;
+                          _updateTask();
+                        }
+                      },
+                    ),
+                    TaskScheduleListView(),
+                    TaskReminderListView(),
+                    ButtonBar(
+                      children: [
+                        TextButton(
+                            onPressed: () {
+                              _appState.closeTaskInfoView();
+                            },
+                            child: const Text('Close')),
+                      ],
+                    )
                   ],
-                )
-              ],
-            )));
+                )));
+      },
+    );
   }
 }

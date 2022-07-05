@@ -8,7 +8,7 @@ part of 'task_date_time.dart';
 
 TaskDateTime _$TaskDateTimeFromJson(Map<String, dynamic> json) => TaskDateTime()
   ..date = json['date'] == null ? null : DateTime.parse(json['date'] as String)
-  ..time = const TimeOfDayJsonConverter().fromJson(json['time'] as String);
+  ..time = const TimeOfDayJsonConverter().fromJson(json['time'] as String?);
 
 Map<String, dynamic> _$TaskDateTimeToJson(TaskDateTime instance) =>
     <String, dynamic>{

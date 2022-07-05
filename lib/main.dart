@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
+import 'package:system_tray/system_tray.dart';
 import 'package:tasca/get_it.dart';
 import 'package:tasca/models/index.dart';
 import 'package:tasca/notifier/app_notifier.dart';
 import 'package:tasca/storage/app_state_storage.dart';
+import 'package:tasca/system_tray.dart';
 import 'package:tasca/widgets/home_page.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   setup();
-  final localStorage = getIt<AppStateStorage>();
-  final appState = await localStorage.read();
+  final appStateStorage = getIt<AppStateStorage>();
+  final appState = await appStateStorage.read();
+  WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
   runApp(ChangeNotifierProvider(
-    create: (context) => appState,
+    create: (context) => appState ?? AppState(),
     child: const MyApp(),
   ));
+  await enableSystemTray();
 }
 
 void setup() {
-  GetIt.I.registerSingleton<AppNotifier>(AppNotifier());
+  GetIt.I.registerSingleton<Notifier>(Notifier());
   getIt.registerSingleton<AppStateStorage>(AppStateStorage());
 }
 
@@ -31,16 +37,31 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late AppState _appState;
-  late AppNotifier _appNotifier;
+  late Notifier _appNotifier;
 
   @override
   void initState() {
     super.initState();
     _appState = Provider.of(context, listen: false);
-    _appNotifier = getIt<AppNotifier>();
+    _appNotifier = getIt<Notifier>();
+    _appNotifier.init();
     _appState.taskReminderDue.listen((task) {
       _appNotifier
-          .notify(AppNotification(title: task.description!, message: ''));
+          .notify(NotificationInfo(
+              title: task.title!,
+              message: task.getDueTime().toString(),
+              actions: ['Snooze', 'Complete']))
+          .then((notification) {
+        notification.events.listen((event) {
+          if (event is ActivatedEvent) {
+            if (event.actionIndex == 0) {
+              _appState.snoozeTaskReminder(task.id!);
+            } else if (event.actionIndex == 1) {
+              _appState.completeTask(task.id!);
+            }
+          }
+        });
+      });
     });
     _appState.startTaskReminderDueCheck();
   }

@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:io';
-import 'package:win_toast/win_toast.dart';
+import 'package:win_toast/win_toast.dart' show WinToast, ToastType;
+import 'package:win_toast/win_toast.dart' as wt;
 
-class AppNotifier {
+class Notifier {
   late final Future<void> _winToastInit;
   bool _winToastInitComplete = false;
   Future<void> init() async {
@@ -24,17 +26,62 @@ class AppNotifier {
     return WinToast.instance();
   }
 
-  notify(AppNotification notification) {
+  Future<Notification> notify(NotificationInfo notification) async {
+    Completer<Notification> completer = Completer();
     if (Platform.isWindows) {
-      WinToast.instance()
-          .showToast(type: ToastType.text01, title: notification.title);
+      (await _getWinToastInstance())
+          ?.showToast(
+              type: ToastType.text02,
+              title: notification.title,
+              subtitle: notification.message,
+              actions: notification.actions)
+          .then((value) {
+        final notification = Notification();
+        value!.eventStream.listen((event) {
+          if (event is wt.DissmissedEvent) {
+            notification._eventsController.add(DismissedEvent());
+          } else if (event is wt.ActivatedEvent) {
+            notification._eventsController
+                .add(ActivatedEvent(actionIndex: event.actionIndex));
+          }
+        });
+        completer.complete(notification);
+      });
     } else {}
+    return completer.future;
   }
 }
 
-class AppNotification {
+class NotificationInfo {
   final String title;
   final String message;
+  List<String> actions = [];
 
-  AppNotification({required this.title, required this.message});
+  NotificationInfo(
+      {required this.title, required this.message, this.actions = const []});
+}
+
+class Notification {
+  final StreamController<NotificationEvent> _eventsController =
+      StreamController.broadcast();
+
+  Stream<NotificationEvent> get events {
+    return _eventsController.stream;
+  }
+}
+
+class NotificationEvent {}
+
+class DismissedEvent extends NotificationEvent {}
+
+class ActivatedEvent extends NotificationEvent {
+  int? actionIndex;
+
+  ActivatedEvent({this.actionIndex});
+}
+
+class AppNotificationAction {
+  final String action;
+
+  AppNotificationAction({required this.action});
 }
