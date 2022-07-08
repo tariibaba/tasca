@@ -43,7 +43,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void closeTaskInfoView() {
+  void hideTaskInfoView() {
     activeTaskId = null;
     isTaskInfoViewOpen = false;
     notifyListeners();
@@ -76,6 +76,23 @@ class AppState extends ChangeNotifier {
     final task = allTasks[taskId]!;
     task.isComplete = true;
     notifyListeners();
+  }
+
+  void deleteTask(String taskId) {
+    taskIds.remove(taskId);
+    allTasks.remove(taskId);
+    if (activeTaskId == taskId) {
+      hideTaskInfoView();
+    }
+    notifyListeners();
+  }
+
+  void toggleTaskInfoView(String taskId) {
+    if (activeTaskId == taskId) {
+      hideTaskInfoView();
+    } else {
+      showTaskInfoView(taskId);
+    }
   }
 
   @JsonKey(ignore: true)

@@ -53,7 +53,6 @@ class _TaskInfoViewState extends State<TaskInfoView> {
   @override
   void didUpdateWidget(covariant TaskInfoView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print('did update');
     _editedTask = _appState.activeTask!;
   }
 
@@ -99,7 +98,7 @@ class _TaskInfoViewState extends State<TaskInfoView> {
                       children: [
                         TextButton(
                             onPressed: () {
-                              _appState.closeTaskInfoView();
+                              _appState.hideTaskInfoView();
                             },
                             child: const Text('Close')),
                       ],
